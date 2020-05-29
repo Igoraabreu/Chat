@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br"> <!--Desenvolvido por Igor Abreu De Andrade e Felipe Da Silva Lima-->
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>Chat - Secretaria Meio Ambiente</title>
+
+    <!-- Bootstrap, framework CSS usado no projeto -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    
+    <style>
+
+        body {
+            background-color: #E6F8E0;
+        }
+
+        .titulo {
+            background-color: #04B431;
+        }
+
+        .bolha-mensagem {
+            background-color: #ddd;
+            padding: 5px 10px;
+            border-radius: 10px;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+    </style>
+
+  </head>
+  
+  <body>
+    
+    <div class="container-fluid">
+        <div class="titulo well text-center">
+            <h4 style="color: white; font-size: 36px;">Chat - Secretaria do Meio Ambiente</h4>
+        </div>
+
+        <div class="col-sm-8">
+            <div>
+                <h1 style="color: #ccc">Sem mensagens ainda!</h1>
+                <!--Tela onde serão mostradas as mensagens-->
+                <div class="tela-mensagens"></div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <form>
+                <b>Digite sua Mensagem abaixo. <span class="glyphicon glyphicon-arrow-down"></span></b>
+                <hr>
+                <div class="form-group">
+                    <label for="Digitar Usuario">Usuário</label>
+                    <input type="text" class="usuario form-control" placeholder="Usuario">
+                  </div>
+                  <div class="form-group">
+                    <label for="Digitar Mensagem">Mensagem</label>
+                    <input type="text" class="mensagem form-control" placeholder="Mensagem">
+                  </div>
+                  <button type="submit" class="btn btn-success">Enviar  <span class="glyphicon glyphicon-send"></span></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- jQuery do Bootstrap -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <!--Utilizaremos a biblioteca Socket.io para enviarmos a mensagem do cliente Javascript para o servidor, ela serve como uma especie de Web sockets-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js" integrity="sha256-bQmrZe4yPnQrLTY+1gYylfNMBuGfnT/HKsCGX+9Xuqo=" crossorigin="anonymous"></script>
+    <!--JavaScript, usamos a biblioteca JQuery para escrever nosso codigo JavaScript -->
+    <script>
+        
+        //instanciando objeto socket
+        var socket = io.connect( 'http://127.0.0.1:5000/' ) //fazendo a conexão, nesse caso com nos mesmos já que o servidor esta no localhost
+        //transmitindo a mensagem
+        socket.on( 'connect', function() {
+            //transmitindo a partir do evento, o objeto com a string 'Usuario conectado' para o servidor em Python
+            socket.emit( 'evento', {
+                data : 'Usuario conectado'
+            } )
+        } )
+        //recuperando informações do formulario e enviando ao servidor
+        var form = $( 'form' ).on( 'submit', function( e ) {
+            e.preventDefault()
+            var usuario = $( 'input.usuario' ).val()
+            var mensagem = $( 'input.mensagem' ).val()
+            socket.emit( 'evento', {
+                user : usuario,
+                msg : mensagem
+            } )
+            //limpando o campo da mensagem
+            $( 'input.mensagem' ).val( '' ).focus()
+        } )
+        //capturando mensagem
+        socket.on( 'resposta', function( msg ) {
+            if ( typeof msg.user !== 'undefined' ) {
+                $( 'h1' ).remove()
+                //mostrando as mensagens na tela
+                $( 'div.tela-mensagens' ).append( '<div class="bolha-mensagem"><b>'+msg.user+'</b> '+msg.msg+'</div>' )
+            }
+            console.log( msg )
+        } )
+    </script>
+
+  </body>
+</html>
